@@ -6,11 +6,29 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/xerrors"
 )
 
-func logErrorStackTraceHandler(c *gin.Context) {
+func dbHandler() error {
+	_, err := gorm.Open("mysql", "invalid DSN")
 
+	if err != nil {
+		return xerrors.Errorf("Open connection error: %v", err)
+	}
+
+	return nil
+}
+
+func logErrorStackTraceHandler(c *gin.Context) {
+	err := dbHandler()
+
+	if err != nil {
+		log.Errorf("%+v", xerrors.Errorf("db handler error: %v", err))
+	}
+
+	c.JSON(http.StatusInternalServerError, gin.H{"status": "error"})
 }
 
 func logInfoHandler(c *gin.Context) {
