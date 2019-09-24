@@ -1,0 +1,20 @@
+{
+  "name": "poc-frontend",
+  "version": "0.0.0",
+  "description": "Proof of concept of logging system in frontend server",
+  "main": "src/index.js",
+  "repository": "github.com/babygoat/logging-system/frontend",
+  "author": "babygoat",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.6.2",
+    "@babel/core": "^7.6.2",
+    "@babel/node": "^7.6.2",
+    "@babel/preset-env": "^7.6.2",
+    "nodemon": "^1.19.2",
+    "rimraf": "^3.0.0"
+  }
+}
