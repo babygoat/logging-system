@@ -1,10 +1,11 @@
 import Express from 'express'
+import logger from './logger'
 
 const app = new Express()
 const port = '3000'
 
 app.get('/info', function (req, res) {
-  console.log('Get info')
+  logger.info('This is log with severity of info!')
   res.status(200).send({'status': 'success'})
 })
 
@@ -17,5 +18,5 @@ app.listen(port, (err) => {
   if (err) {
     console.error(err)
   }
-  console.info("success setup")
+  logger.info("success setup")
 })

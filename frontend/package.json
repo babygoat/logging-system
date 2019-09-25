@@ -7,7 +7,9 @@
   "author": "babygoat",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "logform": "^2.1.2",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.6.2",
