@@ -1,0 +1,42 @@
+FROM node:10.15-slim As build
+
+RUN apt-get update && apt-get install -y make
+
+ARG build_path=/src
+
+WORKDIR $build_path
+
+COPY . $build_path
+
+RUN yarn install
+
+RUN make build
+
+FROM node:10.15-slim
+
+ARG app_group=app_user
+ARG app_user=app_user
+
+# Create isolated system group & user
+RUN groupadd -r ${app_group} && useradd --create-home --home-dir /home/${app_user} -r -g ${app_group} ${app_user}
+
+# Install PM2
+RUN yarn global add pm2
+
+# Run pm2 as our app_user
+RUN pm2 startup -u ${app_user} --hp /home/${app_user} && pm2 save
+
+USER ${app_user}
+
+RUN mkdir /home/${app_user}/dist
+RUN chown ${app_user}:${app_group} /home/${app_user}/dist
+
+WORKDIR /home/${app_user}
+
+COPY --from=build /src/package.json /src/processes.json /src/yarn.lock /home/${app_user}/
+COPY --from=build /src/dist /home/${app_user}/dist/
+
+RUN yarn install --production
+
+EXPOSE 3000
+CMD pm2-runtime --raw processes.json

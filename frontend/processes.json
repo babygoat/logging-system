@@ -1,0 +1,9 @@
+{
+  "apps": [{
+    "name": "poc-fe",
+    "script": "dist/index.js",
+    "merge_logs": true,
+    "out_file": "/dev/null",
+    "error_file": "/dev/null"
+  }]
+}
