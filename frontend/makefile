@@ -10,7 +10,7 @@ dev:
 	$(BIN_DIR)/nodemon src/index.js --exec $(BIN_DIR)/babel-node
 
 build: clean
-	$(BIN_DIR)/babel src/index.js --out-dir dist
+	$(BIN_DIR)/babel src --out-dir dist --copy-files
 
 start:
 	node dist/index.js
