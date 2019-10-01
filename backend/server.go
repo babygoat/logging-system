@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"os"
+	"runtime"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -60,6 +61,11 @@ func init() {
 			log.FieldKeyMsg:   "message",
 			log.FieldKeyFunc:  "function",
 			log.FieldKeyFile:  "file",
+		},
+		CallerPrettyfier: func(f *runtime.Frame) (function, file string) {
+			function = f.Function
+			file = f.File
+			return
 		},
 	})
 	log.SetReportCaller(true)
