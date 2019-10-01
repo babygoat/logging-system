@@ -7,7 +7,7 @@ WORKDIR $home
 # Create directory for nginx temp files
 RUN mkdir -p ${home}/tmp
 
-COPY nginx.conf .
+COPY nginx.conf cert.pem privkey.pem ./
 
 RUN chown -R nginx:nginx $home
 
@@ -15,4 +15,4 @@ EXPOSE 80
 
 USER nginx
 
-CMD ["nginx", "-c" , $home_dir/nginx.conf, "-g", "daemon off;"]
+CMD nginx -c /home/nginx/nginx.conf -g "daemon off;"
