@@ -9,6 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/genproto/googleapis/logging/type"
 )
 
 type (
@@ -17,18 +18,8 @@ type (
 		Version string `json:"version"`
 	}
 
-	context struct {
-		ReportLocation sourceLocation `json:"reportLocation"`
-	}
-
 	causer interface {
 		Cause() error
-	}
-
-	sourceLocation struct {
-		File string `json:"filePath"`
-		Line int    `json:"lineNumber"`
-		Func string `json:"functionName"`
 	}
 
 	serviceContext struct {
@@ -94,8 +85,6 @@ func (f *StackdriverFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		fieldMsg      = "message"
 		fieldSeverity = "severity"
 		fieldSvcCtx   = "serviceContext"
-		fieldCtx      = "context"
-		fieldType     = "@type"
 	)
 
 	// Copy customized fields
@@ -110,7 +99,7 @@ func (f *StackdriverFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	}
 
 	data[fieldMsg] = entry.Message
-	data[fieldSeverity] = entry.Level.String()
+	data[fieldSeverity] = convertLevelToLogSeverity(entry.Level)
 	data[fieldSvcCtx] = serviceContext{
 		Service: f.Service,
 		Version: f.Version,
@@ -131,4 +120,11 @@ func (f *StackdriverFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	}
 
 	return b.Bytes(), nil
+}
+
+func convertLevelToLogSeverity(lvl logrus.Level) ltype.LogSeverity {
+	if lvl == logrus.InfoLevel {
+		return ltype.LogSeverity_INFO
+	}
+	return ltype.LogSeverity_ERROR
 }

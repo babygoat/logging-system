@@ -8,6 +8,7 @@ require (
 	github.com/jinzhu/gorm v1.9.10
 	github.com/pkg/errors v0.8.0
 	github.com/sirupsen/logrus v1.4.2
+	google.golang.org/genproto v0.0.0-20190404172233-64821d5d2107
 )
 
 replace github.com/babygoat/logging-system/backend => ./
