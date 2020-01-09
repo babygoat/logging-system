@@ -61,10 +61,7 @@ func init() {
 	//  }
 
 	log.SetOutput(os.Stdout)
-	log.SetFormatter(&StackdriverFormatter{
-		Service: "poc-backend",
-		Version: "test",
-	})
+	log.SetFormatter(NewStackdriverFormatter("poc-backend", "test"))
 	log.SetReportCaller(true)
 
 }

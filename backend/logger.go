@@ -9,13 +9,16 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/genproto/googleapis/devtools/clouderrorreporting/v1beta1"
 	"google.golang.org/genproto/googleapis/logging/type"
+	"google.golang.org/genproto/googleapis/logging/v2"
 )
 
 type (
-	StackdriverFormatter struct {
-		Service string `json:"service"`
-		Version string `json:"version"`
+	Stackdriver struct {
+		logging.LogEntry
+		clouderrorreporting.ErrorEvent
+		Payload map[string]interface{}
 	}
 
 	causer interface {
@@ -80,30 +83,31 @@ func FormatStack(err error) (buffer []byte) {
 	return
 }
 
-func (f *StackdriverFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	const (
-		fieldMsg      = "message"
-		fieldSeverity = "severity"
-		fieldSvcCtx   = "serviceContext"
-	)
+func NewStackdriverFormatter(service, version string) *Stackdriver {
+	return &Stackdriver{
+		ErrorEvent: clouderrorreporting.ErrorEvent{
+			ServiceContext: &clouderrorreporting.ServiceContext{
+				Service: service,
+				Version: version,
+			},
+		},
+	}
+}
 
+func (s *Stackdriver) Format(entry *logrus.Entry) ([]byte, error) {
 	// Copy customized fields
-	data := make(logrus.Fields, len(entry.Data)+4)
+	s.Payload = make(logrus.Fields, len(entry.Data)+4)
 	for k, v := range entry.Data {
 		switch v := v.(type) {
 		case error:
-			data[k] = v.Error()
+			s.Payload[k] = v.Error()
 		default:
-			data[k] = v
+			s.Payload[k] = v
 		}
 	}
 
-	data[fieldMsg] = entry.Message
-	data[fieldSeverity] = convertLevelToLogSeverity(entry.Level)
-	data[fieldSvcCtx] = serviceContext{
-		Service: f.Service,
-		Version: f.Version,
-	}
+	s.Message = entry.Message
+	s.Severity = convertLevelToLogSeverity(entry.Level)
 
 	var b *bytes.Buffer
 
@@ -115,7 +119,7 @@ func (f *StackdriverFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	encoder := json.NewEncoder(b)
 
-	if err := encoder.Encode(data); err != nil {
+	if err := encoder.Encode(s); err != nil {
 		return nil, fmt.Errorf("failed to marshal fields to JSON, %+v", err)
 	}
 
