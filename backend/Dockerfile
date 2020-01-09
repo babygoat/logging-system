@@ -13,7 +13,7 @@ RUN go mod verify
 
 WORKDIR /src
 
-COPY go.mod go.sum server.go logger.go ./
+COPY go.mod go.sum server.go logger.go gin.go ./
 
 RUN go install
 

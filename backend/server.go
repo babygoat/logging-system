@@ -70,6 +70,7 @@ func main() {
 	// disable default logger(stdout/stderr)
 	router := gin.New()
 	router.Use(gin.Recovery())
+	router.Use(gin.LoggerWithFormatter(NewGinLogFormatter()))
 
 	router.GET("/info", logInfoHandler)
 
