@@ -1,8 +1,10 @@
 package main
 
 import (
+	"net"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -30,10 +32,43 @@ func logErrorStackTraceHandler(c *gin.Context) {
 	c.JSON(http.StatusInternalServerError, gin.H{"status": "error"})
 }
 
+func logPanicHandler(c *gin.Context) {
+	panic("Ahahhahahhah PANIC!")
+}
+
 func logInfoHandler(c *gin.Context) {
 	log.Info("This is log with severity of info!")
 
 	c.JSON(http.StatusOK, gin.H{"status": "success"})
+}
+
+func recovery() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		defer func() {
+			if err := recover(); err != nil {
+				// Make sure the client closed connection won't trigger
+				var brokenPipe bool
+				if ne, ok := err.(*net.OpError); ok {
+					if se, ok := ne.Err.(*os.SyscallError); ok {
+						if strings.Contains(strings.ToLower(se.Error()), "broken pipe") ||
+							strings.Contains(strings.ToLower(se.Error()), "connection reset by peer") {
+							brokenPipe = true
+						}
+					}
+				}
+
+				log.Errorf("%s", FormatStack(errors.Errorf("panic error: %v", err)))
+
+				if brokenPipe {
+					c.Abort()
+				} else {
+					c.AbortWithStatus(http.StatusInternalServerError)
+				}
+
+			}
+		}()
+		c.Next()
+	}
 }
 
 func init() {
@@ -69,12 +104,14 @@ func init() {
 func main() {
 	// disable default logger(stdout/stderr)
 	router := gin.New()
-	router.Use(gin.Recovery())
+	router.Use(recovery())
 	router.Use(gin.LoggerWithFormatter(NewGinLogFormatter()))
 
 	router.GET("/info", logInfoHandler)
 
 	router.GET("/errorStackTrace", logErrorStackTraceHandler)
+
+	router.GET("/panic", logPanicHandler)
 
 	router.Run(":8080")
 }
