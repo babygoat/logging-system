@@ -57,7 +57,7 @@ func recovery() gin.HandlerFunc {
 					}
 				}
 
-				log.Errorf("%s", FormatStack(errors.Errorf("panic error: %v", err)))
+				log.Errorf("%s", FormatRecover(4))
 
 				if brokenPipe {
 					c.Abort()

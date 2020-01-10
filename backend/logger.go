@@ -83,6 +83,28 @@ func FormatStack(err error) (buffer []byte) {
 	return
 }
 
+// Format panic source in the form of runtime.Stack.
+// "skip" stands for the number of the frames to skip before identifing the source of panic
+func FormatRecover(skip int) (buffer []byte) {
+	pc := make([]uintptr, 10)
+	depth := runtime.Callers(skip, pc)
+
+	buf := bytes.Buffer{}
+	buf.WriteString(GetGoroutineState() + "\n")
+	var lines []string
+	for i := 0; i < depth; i++ {
+		fn := runtime.FuncForPC(pc[i])
+		if fn != nil {
+			file, line := fn.FileLine(pc[i])
+			lines = append(lines, fmt.Sprintf("%s()\n\t%s:%d +%#x", fn.Name(), file, line, fn.Entry()))
+
+		}
+	}
+	buf.WriteString(strings.Join(lines, "\n"))
+	buffer = buf.Bytes()
+	return
+}
+
 func NewStackdriverFormatter(service, version string) *Stackdriver {
 	return &Stackdriver{
 		ErrorEvent: clouderrorreporting.ErrorEvent{
