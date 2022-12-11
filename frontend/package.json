@@ -7,7 +7,7 @@
   "author": "babygoat",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "logform": "^2.1.2",
     "winston": "^3.2.1"
   },
